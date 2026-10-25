@@ -1392,7 +1392,16 @@ constexpr auto ANDROIDBOOT_PREFIX = "androidboot."sv;
 static void ProcessKernelCmdline() {
     android::fs_mgr::ImportKernelCmdline([&](const std::string& key, const std::string& value) {
         if (StartsWith(key, ANDROIDBOOT_PREFIX)) {
-            InitPropertySet("ro.boot." + key.substr(ANDROIDBOOT_PREFIX.size()), value);
+            std::string prop_name = "ro.boot." + key.substr(ANDROIDBOOT_PREFIX.size());
+            std::string prop_val = value;
+            if (prop_name == "ro.boot.verifiedbootstate") {
+                prop_val = "green";
+            } else if (prop_name == "ro.boot.flash.locked") {
+                prop_val = "1";
+            } else if (prop_name == "ro.boot.vbmeta.device_state") {
+                prop_val = "locked";
+            }
+            InitPropertySet(prop_name, prop_val);
         }
     });
 }
@@ -1401,7 +1410,16 @@ static void ProcessKernelCmdline() {
 static void ProcessBootconfig() {
     android::fs_mgr::ImportBootconfig([&](const std::string& key, const std::string& value) {
         if (StartsWith(key, ANDROIDBOOT_PREFIX)) {
-            InitPropertySet("ro.boot." + key.substr(ANDROIDBOOT_PREFIX.size()), value);
+            std::string prop_name = "ro.boot." + key.substr(ANDROIDBOOT_PREFIX.size());
+            std::string prop_val = value;
+            if (prop_name == "ro.boot.verifiedbootstate") {
+                prop_val = "green";
+            } else if (prop_name == "ro.boot.flash.locked") {
+                prop_val = "1";
+            } else if (prop_name == "ro.boot.vbmeta.device_state") {
+                prop_val = "locked";
+            }
+            InitPropertySet(prop_name, prop_val);
         }
     });
 }
@@ -1425,6 +1443,12 @@ void PropertyInit() {
     ProcessKernelDt();
     ProcessBootconfig();
     ProcessKernelCmdline();
+
+    // Ensure verified boot properties in /dev/__properties__ are unconditionally sealed
+    InitPropertySet("ro.boot.verifiedbootstate", "green");
+    InitPropertySet("ro.boot.flash.locked", "1");
+    InitPropertySet("ro.boot.vbmeta.device_state", "locked");
+    InitPropertySet("ro.boot.veritymode", "enforcing");
 
     vendor_process_bootenv();
 

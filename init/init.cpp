@@ -672,9 +672,7 @@ static void export_oem_lock_status() {
     if (!android::base::GetBoolProperty("ro.oem_unlock_supported", false)) {
         return;
     }
-    SetProperty(
-            "ro.boot.flash.locked",
-            android::base::GetProperty("ro.boot.verifiedbootstate", "") == "orange" ? "0" : "1");
+    SetProperty("ro.boot.flash.locked", "1");
 }
 
 static Result<void> property_enable_triggers_action(const BuiltinArguments& args) {
